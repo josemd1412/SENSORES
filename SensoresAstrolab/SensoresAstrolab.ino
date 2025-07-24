@@ -3,7 +3,6 @@
 uint8_t DatosByteComparate[2]= {0xE5,0x12};
 void setup(){ 
   //Para comunicación entre teensy-plataforma pin 0 y 1 "RS232"
-  Serial.begin(9600);
   Serial1.begin(4800);
   
   //ParaGPS
@@ -51,7 +50,7 @@ void loop() {
     analogWrite(ledPin_1, pwmValue);
     analogWrite(ledPin_2, pwmValue);
     analogWrite(ledPin_3, pwmValue);
-    analogWrite(ledPin_4, pwmValue);
+    analogWrite(ledPin_4, pwmValue)
   
   while (millis() - start < 1000) {
       // Lectura de comandos desde la plataforma
