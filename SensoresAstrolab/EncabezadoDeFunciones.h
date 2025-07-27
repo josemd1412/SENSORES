@@ -145,6 +145,7 @@ Entrada: Valor de voltage al que quieres que sea la señal PWN 0 -3.3V
 */
 void FunPWMParaHeatingPad(float valorVoltage);
 void FunControlHeatingPad(float temp4 , float temp5, int fetPin);
+void FunControlHeatingPad(float temp4, int fetPin);
 //Para LecturaDecomandos-------------------------------------------------------------------
 void FunProcesarComandos(String comandos);
 void FunEjecutarComandos(String comando);

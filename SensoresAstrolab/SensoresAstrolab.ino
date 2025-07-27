@@ -1,6 +1,6 @@
 #include "LibreriasOBC.h"
 /*................................................................VOID_SETUP.......................................................*/
-uint8_t DatosByteComparate[2]= {0xE5,0x12};
+uint8_t DatosBytesComparate[2]= {0xE5,0x12};
 void setup(){ 
   //Para comunicación entre teensy-plataforma pin 0 y 1 "RS232"
   Serial1.begin(4800);
@@ -50,7 +50,7 @@ void loop() {
     analogWrite(ledPin_1, pwmValue);
     analogWrite(ledPin_2, pwmValue);
     analogWrite(ledPin_3, pwmValue);
-    analogWrite(ledPin_4, pwmValue)
+    analogWrite(ledPin_4, pwmValue);
   
   while (millis() - start < 1000) {
       // Lectura de comandos desde la plataforma
@@ -58,8 +58,10 @@ void loop() {
         DatosBytesCommand[bytesRead] = Serial1.read();
         bytesRead++;
         if (bytesRead == 2) {
-          DatosByteComparate[0]=DatosBytesCommand[0];
-          DatosByteComparate[1]=DatosBytesCommand[1];
+          if(DatosBytesCommand[0] !=0x00  && DatosBytesCommand[1] != 0x00){
+            DatosBytesComparate[0]=DatosBytesCommand[0];
+            DatosBytesComparate[1]=DatosBytesCommand[1];
+          }
           bytesRead = 0; // Resetear el contador de bytes leídos
         }
       }
@@ -87,46 +89,48 @@ void loop() {
     String(V_CSSC_2)+","+
     String(V_CSSC_3)+","+
     String(V_CSSC_4)+",";
+
+    int Value_5 = analogRead(fotodiodo_Pin_5);
+    Serial.println(Value_5);
+    //Hacemos lo mismo para los datos de las celdas
+    float V_fotodiodo = Value_5 * (1.0 / 1023.0);
+    Data += String(V_fotodiodo)+",";
+
+    
+  FunEjecutarComandos(DatosBytesComparate);
+
+    if (DatosBytesComparate[0] ==0xE5  && DatosBytesComparate[1] == 0x12){
+      /*
+      ____________________________________________________________________________________________________
+      Obtencion, lectura y guardado de datos una Cadena String
+      _________________________________________________________________________________________________________
+      */
+      
+      //Se acumula la cadena de datos segun especidficaciones Nasa
+      
+      Data += FunObtenerStringDatosMAX31865(SensorMAX31865);
+      Data += FunObtenerStringDatosINA219(SensorCorriente_Ina219);
+      Data += FunObtenerStringDatosBME280(Sensor01Bme280);
+      Data += FunObtenerStringDatosACS712(SensorACS712);
+      Data += FunObtenerStringDatosGPS6mv2();
+      
+      //DatosTermistor
+      for(int k=0;k<6;k++) pinMode(PinesTermistor[k], INPUT); //Configurar lecturas para no errores
+      Data += FunObtenerStringDatosTermistor(PinesTermistor);
+      
+      Data += "\n";
+      //Se envia datos a la plataforma
+      //Serial.print(Data);
+
+      /*____________________________________________________________________________________________________
+      Se guarda datos en SDcard
+      _________________________________________________________________________________________________________
+      */
+      Serial.println(Data);
+      FunControlHeatingPad(Sensor01Bme280.readTemperature(), 2);
+    }
   }
-
-  int Value_5 = analogRead(fotodiodo_Pin_5);
-  //Hacemos lo mismo para los datos de las celdas
-  float V_fotodiodo = Value_5 * (1.0 / 1023.0);
-  Data += String(V_fotodiodo)+",";
-  
-
-  FunEjecutarComandos(DatosByteComparate);
-  if (DatosByteComparate[0] ==0xE5  && DatosByteComparate[1] == 0x12){
-    /*
-    ____________________________________________________________________________________________________
-    Obtencion, lectura y guardado de datos una Cadena String
-    _________________________________________________________________________________________________________
-    */
-    
-    //Se acumula la cadena de datos segun especidficaciones Nasa
-    
-    Data += FunObtenerStringDatosMAX31865(SensorMAX31865);
-    Data += FunObtenerStringDatosINA219(SensorCorriente_Ina219);
-    Data += FunObtenerStringDatosBME280(Sensor01Bme280);
-    Data += FunObtenerStringDatosACS712(SensorACS712);
-    Data += FunObtenerStringDatosGPS6mv2();
-    
-    //DatosTermistor
-    for(int k=0;k<6;k++) pinMode(PinesTermistor[k], INPUT); //Configurar lecturas para no errores
-    Data += FunObtenerStringDatosTermistor(PinesTermistor);
-    
-    Data += "\n";
-    //Se envia datos a la plataforma
-    //Serial.print(Data);
-
-    /*____________________________________________________________________________________________________
-    Se guarda datos en SDcard
-    _________________________________________________________________________________________________________
-    */
-    FuncionEscribirEnSDcard(ArchivoSDcard, Data);
-    
-    FunControlHeatingPad(Termistores[3], Termistores[4], 2);
-  }
+  FuncionEscribirEnSDcard(ArchivoSDcard, Data);
 }
 
 

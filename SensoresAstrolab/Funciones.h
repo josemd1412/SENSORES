@@ -213,6 +213,17 @@ void FunControlHeatingPad(float temp4 , float temp5, int fetPin){
     analogWrite(fetPin,0);
   }
 }
+void FunControlHeatingPad(float temp4, int fetPin){
+  if(temp4<15){
+    analogWrite(fetPin,4095);
+  }
+  else if(temp4>=15 && temp4<20){
+    analogWrite(fetPin,1360);
+  }
+  else {
+    analogWrite(fetPin,0);
+  }
+}
 /*____________________________________________________________________________________________________________________________
 ---------------------------FuncionesParaLecturaDecomandos---------------------------
 ____________________________________________________________________________________________________________________________*/
@@ -260,13 +271,13 @@ void FunEjecutarComandos(const uint8_t* command) {
     Sistema de apagado, 15xFF, Apagar todo, Corregir cualquier fallo que no pueda resolverse con los demás comandos establecidos.
     En caso de temperatura muy alta u otra avería que lo justifique.
     */
-    Serial8.println("15xFF");
+    //Serial8.println("15xFF");
   } else if (command[0] == 0xE5 && command[1] == 0x12) {
     //Serial.println("Encendiendo todo el sistema");
     /*
     Sistema de encendido, E5x12, Encender todo, Reiniciar todo y funcionar correctamente.
     */
-    Serial8.println("E5x12");
+    //Serial8.println("E5x12");
   } else if (command[0] == 0xD5 && command[1] == 0x03) {
     /*
     Sistema de encendido, almohadilla calefactora 1, 
@@ -274,7 +285,9 @@ void FunEjecutarComandos(const uint8_t* command) {
     apagar el calentador del primer compartimento.
     Disminución de la temperatura y del consumo de energía. Almohadilla calefactora 1, apagar. 
     */
-    Serial8.println("D5x03");
+    //Serial8.println("D5x03");
+    FunPWMParaHeatingPad(0.0);
+    
   } else if (command[0] == 0xC5 && command[1] == 0x04) {
     /*
     Almohadilla calefactora 1, 
@@ -282,7 +295,8 @@ void FunEjecutarComandos(const uint8_t* command) {
     Encender el calentador del primer compartimento.
     Aumento de la temperatura y del consumo de energía.
     */
-    Serial8.println("C5x04");
+    //Serial8.println("C5x04");
+    FunPWMParaHeatingPad(3.3);
   } else if (command[0] == 0x55 && command[1] == 0x0B) {
     /*
     Almohadilla calefactora 1 
@@ -291,24 +305,24 @@ void FunEjecutarComandos(const uint8_t* command) {
     Habilite la generación de la señal PWM y lea los datos.
     */
     
-    FunPWMParaHeatingPad(0.0);
+    
   } else if (command[0] == 0x45 && command[1] == 0x0C) {
     /*
     Salida PWM iniciada Plotter IV 
     apagado, 45x0C,
     Apague todas las salidas del plotter IB. Deshabilite la señal PWM.
     */
-    Serial.println("45x0C");
-    FunPWMParaHeatingPad(3.3);
+    //Serial.println("45x0C");
+    
   } else if (command[0] == 0xC5 && command[1] == 0x04) {
     /*
     T= +5 min, C5x04, 
     Encienda el calentador del primer compartimento. 
     Aumento de la temperatura del compartimento y del consumo de energía.
     */
-    Serial8.println("C5x04");
+    //Serial8.println("C5x04");
   } else {
-    Serial.println(".");
+    //Serial.println(".");
   }
 }
 
